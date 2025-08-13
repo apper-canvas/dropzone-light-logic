@@ -1,0 +1,6 @@
+{
+  "maxFileSize": 10485760,
+  "allowedTypes": ["image/*", "application/pdf", ".doc", ".docx", ".txt", ".zip"],
+  "maxFiles": 10,
+  "autoGenerateLinks": true
+}
