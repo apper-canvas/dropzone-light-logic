@@ -100,9 +100,8 @@ async deleteFile(fileId) {
         return file.name.toLowerCase().endsWith(type.toLowerCase())
       }
       return file.type.startsWith(type.replace("*", ""))
-    })
+})
   }
-}
 
   // Upload history storage and management
   constructor() {
@@ -176,3 +175,7 @@ async deleteFile(fileId) {
     return sections
   }
 }
+
+// Create and export singleton instance
+const uploadService = new UploadService()
+export default uploadService
