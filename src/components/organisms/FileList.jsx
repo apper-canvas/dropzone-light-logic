@@ -7,11 +7,13 @@ import Badge from "@/components/atoms/Badge"
 import ProgressBar from "@/components/molecules/ProgressBar"
 import FileTypeIcon from "@/components/molecules/FileTypeIcon"
 import ShareLinkModal from "@/components/molecules/ShareLinkModal"
+import FilePreviewModal from "@/components/molecules/FilePreviewModal"
 import { Card, CardContent } from "@/components/atoms/Card"
 import { cn } from "@/utils/cn"
 
 const FileList = ({ files, onRemoveFile, onRetryUpload }) => {
   const [shareModal, setShareModal] = React.useState({ isOpen: false, file: null })
+  const [previewModal, setPreviewModal] = React.useState({ isOpen: false, fileIndex: 0 })
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 Bytes"
@@ -41,8 +43,20 @@ const FileList = ({ files, onRemoveFile, onRetryUpload }) => {
     }
   }
 
-  const handleShare = (file) => {
+const handleShare = (file) => {
     setShareModal({ isOpen: true, file })
+  }
+
+  const handlePreview = (fileIndex) => {
+    const completedFiles = files.filter(f => f.status === "completed")
+    const completedFileIndex = completedFiles.findIndex(f => f.id === files[fileIndex].id)
+    if (completedFileIndex !== -1) {
+      setPreviewModal({ isOpen: true, fileIndex: completedFileIndex })
+    }
+  }
+
+  const getPreviewableFiles = () => {
+    return files.filter(f => f.status === "completed")
   }
 
   const handleCopyLink = async (shareLink) => {
@@ -144,8 +158,17 @@ const FileList = ({ files, onRemoveFile, onRetryUpload }) => {
 
                     {/* Actions */}
                     <div className="flex-shrink-0 flex items-center space-x-2">
-                      {file.status === "completed" && file.shareLink && (
+{file.status === "completed" && file.shareLink && (
                         <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handlePreview(files.indexOf(file))}
+                            className="text-gray-500 hover:text-primary"
+                            title="Preview file"
+                          >
+                            <ApperIcon name="Eye" size={16} />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -197,11 +220,19 @@ const FileList = ({ files, onRemoveFile, onRetryUpload }) => {
         </AnimatePresence>
       </div>
 
-      <ShareLinkModal
+<ShareLinkModal
         isOpen={shareModal.isOpen}
         onClose={() => setShareModal({ isOpen: false, file: null })}
         shareLink={shareModal.file?.shareLink || ""}
         fileName={shareModal.file?.name || ""}
+      />
+      
+      <FilePreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, fileIndex: 0 })}
+        files={getPreviewableFiles()}
+        currentFileIndex={previewModal.fileIndex}
+        onNavigate={(newIndex) => setPreviewModal(prev => ({ ...prev, fileIndex: newIndex }))}
       />
     </>
   )

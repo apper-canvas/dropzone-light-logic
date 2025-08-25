@@ -92,3 +92,29 @@
 .Toastify__close-button {
   @apply text-gray-400 hover:text-gray-600;
 }
+
+/* File Preview Modal Styling */
+.preview-container {
+  @apply p-4 bg-gray-50 max-h-96 overflow-auto;
+}
+
+.preview-container img {
+  transition: transform 0.2s ease-out;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Zoom utilities */
+.zoom-controls {
+  @apply flex items-center space-x-2 bg-black/20 backdrop-blur-sm rounded-lg px-3 py-2;
+}
+
+/* Smooth scrolling for preview navigation */
+.preview-navigation {
+  scroll-behavior: smooth;
+}
+
+/* Loading spinner for preview */
+.preview-loading {
+  @apply animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full;
+}
