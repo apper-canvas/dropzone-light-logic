@@ -1,4 +1,4 @@
-import uploadConfigData from "@/services/mockData/uploadConfig.json"
+import uploadConfigData from "@/services/mockData/uploadConfig.json";
 
 class UploadService {
   async getUploadConfig() {
@@ -67,9 +67,16 @@ class UploadService {
     }
   }
 
-  async deleteFile(fileId) {
+async deleteFile(fileId) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Remove from history if it exists
+    if (this.uploadHistory) {
+      this.uploadHistory = this.uploadHistory.filter(file => file.id !== fileId)
+      this.saveHistoryToStorage()
+    }
+    
     return { success: true }
   }
 
@@ -97,4 +104,75 @@ class UploadService {
   }
 }
 
-export default new UploadService()
+  // Upload history storage and management
+  constructor() {
+    this.uploadHistory = this.loadHistoryFromStorage()
+  }
+
+  loadHistoryFromStorage() {
+    try {
+      const stored = localStorage.getItem('uploadHistory')
+      return stored ? JSON.parse(stored) : []
+    } catch (error) {
+      console.error('Failed to load upload history:', error)
+      return []
+    }
+  }
+
+  saveHistoryToStorage() {
+    try {
+      localStorage.setItem('uploadHistory', JSON.stringify(this.uploadHistory))
+    } catch (error) {
+      console.error('Failed to save upload history:', error)
+    }
+  }
+
+  addToHistory(fileData) {
+    const historyEntry = {
+      id: fileData.id,
+      name: fileData.fileName,
+      size: fileData.fileSize,
+      type: fileData.type || 'application/octet-stream',
+      uploadedAt: fileData.uploadedAt,
+      shareLink: fileData.shareLink,
+      downloadUrl: fileData.downloadUrl,
+      downloads: 0
+    }
+
+    // Add to beginning of array (most recent first)
+    this.uploadHistory.unshift(historyEntry)
+    
+    // Keep only last 100 files
+    this.uploadHistory = this.uploadHistory.slice(0, 100)
+    
+    this.saveHistoryToStorage()
+  }
+
+  async getUploadHistory() {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Group files by upload date
+    const groupedHistory = this.uploadHistory.reduce((groups, file) => {
+      const uploadDate = new Date(file.uploadedAt)
+      const dateKey = uploadDate.toISOString().split('T')[0] // YYYY-MM-DD format
+      
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          date: dateKey,
+          files: []
+        }
+      }
+      
+      groups[dateKey].files.push(file)
+      return groups
+    }, {})
+
+    // Convert to array and sort by date (most recent first)
+    const sections = Object.values(groupedHistory).sort((a, b) => 
+      new Date(b.date) - new Date(a.date)
+    )
+
+    return sections
+  }
+}

@@ -116,5 +116,62 @@
 
 /* Loading spinner for preview */
 .preview-loading {
-  @apply animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full;
+@apply animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full;
+}
+
+/* Upload History Sidebar Styling */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Responsive Layout Adjustments */
+@media (max-width: 1024px) {
+  .sidebar-overlay {
+    @apply fixed inset-0 bg-black/20 backdrop-blur-sm z-40;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-container {
+    @apply relative translate-x-0 shadow-none border-l-0 border-r;
+  }
+  
+  .main-content-with-sidebar {
+    @apply mr-80;
+  }
+}
+
+/* File history item animations */
+.history-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.history-item:hover {
+  @apply bg-gray-50 scale-[1.01];
+}
+
+.history-section-header {
+  @apply transition-colors duration-150;
+}
+
+.history-section-header:hover {
+  @apply bg-gray-50;
 }

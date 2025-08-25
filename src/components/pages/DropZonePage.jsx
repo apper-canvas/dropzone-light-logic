@@ -2,20 +2,21 @@ import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { toast } from "react-toastify"
 import ApperIcon from "@/components/ApperIcon"
+import Button from "@/components/atoms/Button"
 import DropZone from "@/components/organisms/DropZone"
 import FileList from "@/components/organisms/FileList"
+import UploadHistorySidebar from "@/components/organisms/UploadHistorySidebar"
 import Loading from "@/components/ui/Loading"
 import Error from "@/components/ui/Error"
 import Empty from "@/components/ui/Empty"
 import uploadService from "@/services/api/uploadService"
-
 const DropZonePage = () => {
   const [files, setFiles] = useState([])
   const [uploadConfig, setUploadConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
-
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   // Load upload configuration on mount
   useEffect(() => {
     const loadConfig = async () => {
@@ -127,11 +128,21 @@ const DropZonePage = () => {
                 uploadSpeed: 0
               }
             : f
-        )
+)
       )
 
-      toast.success(`${fileObj.name} uploaded successfully!`)
+      // Add to upload history
+      uploadService.addToHistory({
+        id: result.id,
+        fileName: fileObj.name,
+        fileSize: fileObj.size,
+        type: fileObj.type,
+        uploadedAt: result.uploadedAt,
+        shareLink: result.shareLink,
+        downloadUrl: result.downloadUrl
+      })
 
+      toast.success(`${fileObj.name} uploaded successfully!`)
     } catch (error) {
       console.error("Upload failed:", error)
       
@@ -205,94 +216,115 @@ const DropZonePage = () => {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-              <ApperIcon name="CloudUpload" size={24} className="text-white" />
+return (
+    <div className="min-h-screen bg-white flex">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col lg:mr-80">
+        <div className="max-w-4xl mx-auto p-6 w-full">
+          {/* Header */}
+          <motion.header
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
+                <ApperIcon name="CloudUpload" size={24} className="text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 font-display">
+                DropZone
+              </h1>
+              {/* History Toggle Button - Desktop */}
+              <Button
+                variant="ghost"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="hidden lg:flex items-center space-x-2 ml-4"
+              >
+                <ApperIcon name="History" size={16} />
+                <span className="text-sm">History</span>
+              </Button>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 font-display">
-              DropZone
-            </h1>
-          </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload and share your files quickly with visual feedback. 
-            Drag and drop multiple files or click to browse.
-          </p>
-        </motion.header>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Upload and share your files quickly with visual feedback. 
+              Drag and drop multiple files or click to browse.
+            </p>
+          </motion.header>
 
-        {/* Main Content */}
-        <div className="space-y-8">
-          {/* Drop Zone */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <DropZone
-              onFilesSelected={handleFilesSelected}
-              uploadConfig={uploadConfig}
-              isUploading={isUploading}
-            />
-          </motion.div>
-
-          {/* File List */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            {files.length > 0 ? (
-              <FileList
-                files={files}
-                onRemoveFile={handleRemoveFile}
-                onRetryUpload={handleRetryUpload}
-              />
-            ) : (
-              <Empty
-                icon="Upload"
-                title="Ready to upload"
-                message="Drag files to the drop zone above or click browse to select files from your device."
-                actionLabel="Start Uploading"
-                onAction={() => document.querySelector('input[type="file"]')?.click()}
-              />
-            )}
-          </motion.div>
-
-          {/* Stats Footer */}
-          {files.length > 0 && (
+          {/* Main Content */}
+          <div className="space-y-8">
+            {/* Drop Zone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-surface rounded-lg p-4"
+              transition={{ delay: 0.1 }}
             >
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center space-x-4">
-                  <span>Total Files: {files.length}</span>
-                  <span>Completed: {files.filter(f => f.status === "completed").length}</span>
-                  <span>Uploading: {files.filter(f => f.status === "uploading").length}</span>
-                  {files.filter(f => f.status === "error").length > 0 && (
-                    <span className="text-error">
-                      Failed: {files.filter(f => f.status === "error").length}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-gray-500">
-                  Max {uploadConfig.maxFiles} files • {Math.round(uploadConfig.maxFileSize / 1024 / 1024)}MB per file
-                </div>
-              </div>
+              <DropZone
+                onFilesSelected={handleFilesSelected}
+                uploadConfig={uploadConfig}
+                isUploading={isUploading}
+              />
             </motion.div>
-          )}
+
+            {/* File List */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              {files.length > 0 ? (
+                <FileList
+                  files={files}
+                  onRemoveFile={handleRemoveFile}
+                  onRetryUpload={handleRetryUpload}
+                />
+              ) : (
+                <Empty
+                  icon="Upload"
+                  title="Ready to upload"
+                  message="Drag files to the drop zone above or click browse to select files from your device."
+                  actionLabel="Start Uploading"
+                  onAction={() => document.querySelector('input[type="file"]')?.click()}
+                />
+              )}
+            </motion.div>
+
+            {/* Stats Footer */}
+            {files.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-surface rounded-lg p-4"
+              >
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center space-x-4">
+                    <span>Total Files: {files.length}</span>
+                    <span>Completed: {files.filter(f => f.status === "completed").length}</span>
+                    <span>Uploading: {files.filter(f => f.status === "uploading").length}</span>
+                    {files.filter(f => f.status === "error").length > 0 && (
+                      <span className="text-error">
+                        Failed: {files.filter(f => f.status === "error").length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Max {uploadConfig.maxFiles} files • {Math.round(uploadConfig.maxFileSize / 1024 / 1024)}MB per file
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Upload History Sidebar */}
+      <UploadHistorySidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onFileSelect={(file) => {
+          toast.info(`Selected file: ${file.name}`)
+        }}
+      />
     </div>
   )
 }

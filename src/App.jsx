@@ -1,11 +1,11 @@
-import React from "react"
-import { Routes, Route } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
-import DropZonePage from "@/components/pages/DropZonePage"
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import DropZonePage from "@/components/pages/DropZonePage";
 
 function App() {
-  return (
-    <>
+return (
+    <div className="min-h-screen">
       <Routes>
         <Route path="/" element={<DropZonePage />} />
       </Routes>
@@ -22,10 +22,10 @@ function App() {
         pauseOnHover
         theme="light"
         toastClassName="toast-container"
-        style={{ zIndex: 9999 }}
+style={{ zIndex: 9999 }}
       />
-    </>
-  )
+    </div>
+  );
 }
 
 export default App
